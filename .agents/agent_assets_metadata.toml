@@ -18,3 +18,9 @@ id = "oyHBQbcupxydlnY61j4gN"
 uri = "file://monthly_sales_trend.png"
 type = "image"
 title = "Line Chart — Monthly Sales Trend"
+
+[[outputs]]
+id = "DJeEfnGQ33axwrphjPgPC"
+uri = "file://README.md"
+type = "text"
+title = "README.md — UniqueMKN Data Analysis"
