@@ -6,3 +6,15 @@ id = "T0vCRc00UwhHvaakTemPG"
 uri = "file://UniqueMKN_dataset.csv"
 type = "table"
 title = "UniqueMKN E-Commerce Dataset (500 rows)"
+
+[[outputs]]
+id = "v1GEDOkZnV_3od7qCWYyn"
+uri = "file://total_sales_by_category.png"
+type = "image"
+title = "Bar Chart — Total Sales by Category"
+
+[[outputs]]
+id = "oyHBQbcupxydlnY61j4gN"
+uri = "file://monthly_sales_trend.png"
+type = "image"
+title = "Line Chart — Monthly Sales Trend"
