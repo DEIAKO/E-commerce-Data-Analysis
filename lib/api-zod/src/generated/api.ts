@@ -14,3 +14,76 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * Accepts a CSV file and returns parsed data summary and columns
+ * @summary Upload a CSV dataset for analysis
+ */
+export const UploadDatasetBody = zod.object({
+  file: zod.instanceof(File),
+});
+
+export const UploadDatasetResponse = zod.object({
+  filename: zod.string(),
+  rowCount: zod.number(),
+  columnCount: zod.number(),
+  columns: zod.array(
+    zod.object({
+      name: zod.string(),
+      type: zod.enum(["numeric", "categorical", "datetime", "unknown"]),
+      nullCount: zod.number(),
+      uniqueCount: zod.number(),
+      sample: zod.array(zod.unknown()),
+    }),
+  ),
+  previewRows: zod.array(zod.record(zod.string(), zod.unknown())),
+});
+
+/**
+ * Accepts raw data rows and returns descriptive statistics per column
+ * @summary Compute statistics for a dataset
+ */
+export const ComputeStatsBody = zod.object({
+  data: zod.array(zod.record(zod.string(), zod.unknown())),
+  columns: zod.array(
+    zod.object({
+      name: zod.string(),
+      type: zod.enum(["numeric", "categorical", "datetime", "unknown"]),
+      nullCount: zod.number(),
+      uniqueCount: zod.number(),
+      sample: zod.array(zod.unknown()),
+    }),
+  ),
+});
+
+export const ComputeStatsResponse = zod.object({
+  columnStats: zod.array(
+    zod.object({
+      name: zod.string(),
+      type: zod.string(),
+      count: zod.number(),
+      nullCount: zod.number(),
+      uniqueCount: zod.number(),
+      mean: zod.number().nullable(),
+      median: zod.number().nullable(),
+      std: zod.number().nullable(),
+      min: zod.number().nullable(),
+      max: zod.number().nullable(),
+      q25: zod.number().nullable(),
+      q75: zod.number().nullable(),
+      topValues: zod.array(
+        zod.object({
+          value: zod.string(),
+          count: zod.number(),
+        }),
+      ),
+    }),
+  ),
+  correlations: zod.array(
+    zod.object({
+      col1: zod.string(),
+      col2: zod.string(),
+      value: zod.number(),
+    }),
+  ),
+});

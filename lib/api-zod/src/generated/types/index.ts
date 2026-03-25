@@ -6,4 +6,16 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./columnInfo";
+export * from "./columnInfoType";
+export * from "./columnStats";
+export * from "./correlation";
+export * from "./datasetSummary";
+export * from "./datasetSummaryPreviewRowsItem";
+export * from "./errorResponse";
 export * from "./healthStatus";
+export * from "./statsRequest";
+export * from "./statsRequestDataItem";
+export * from "./statsResponse";
+export * from "./uploadDatasetBody";
+export * from "./valueCount";

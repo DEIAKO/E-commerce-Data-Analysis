@@ -5,18 +5,28 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  DatasetSummary,
+  ErrorResponse,
+  HealthStatus,
+  StatsRequest,
+  StatsResponse,
+  UploadDatasetBody,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +109,179 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * Accepts a CSV file and returns parsed data summary and columns
+ * @summary Upload a CSV dataset for analysis
+ */
+export const getUploadDatasetUrl = () => {
+  return `/api/analysis/upload`;
+};
+
+export const uploadDataset = async (
+  uploadDatasetBody: UploadDatasetBody,
+  options?: RequestInit,
+): Promise<DatasetSummary> => {
+  const formData = new FormData();
+  formData.append(`file`, uploadDatasetBody.file);
+
+  return customFetch<DatasetSummary>(getUploadDatasetUrl(), {
+    ...options,
+    method: "POST",
+    body: formData,
+  });
+};
+
+export const getUploadDatasetMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof uploadDataset>>,
+    TError,
+    { data: BodyType<UploadDatasetBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof uploadDataset>>,
+  TError,
+  { data: BodyType<UploadDatasetBody> },
+  TContext
+> => {
+  const mutationKey = ["uploadDataset"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof uploadDataset>>,
+    { data: BodyType<UploadDatasetBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return uploadDataset(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UploadDatasetMutationResult = NonNullable<
+  Awaited<ReturnType<typeof uploadDataset>>
+>;
+export type UploadDatasetMutationBody = BodyType<UploadDatasetBody>;
+export type UploadDatasetMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Upload a CSV dataset for analysis
+ */
+export const useUploadDataset = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof uploadDataset>>,
+    TError,
+    { data: BodyType<UploadDatasetBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof uploadDataset>>,
+  TError,
+  { data: BodyType<UploadDatasetBody> },
+  TContext
+> => {
+  return useMutation(getUploadDatasetMutationOptions(options));
+};
+
+/**
+ * Accepts raw data rows and returns descriptive statistics per column
+ * @summary Compute statistics for a dataset
+ */
+export const getComputeStatsUrl = () => {
+  return `/api/analysis/stats`;
+};
+
+export const computeStats = async (
+  statsRequest: StatsRequest,
+  options?: RequestInit,
+): Promise<StatsResponse> => {
+  return customFetch<StatsResponse>(getComputeStatsUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(statsRequest),
+  });
+};
+
+export const getComputeStatsMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof computeStats>>,
+    TError,
+    { data: BodyType<StatsRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof computeStats>>,
+  TError,
+  { data: BodyType<StatsRequest> },
+  TContext
+> => {
+  const mutationKey = ["computeStats"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof computeStats>>,
+    { data: BodyType<StatsRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return computeStats(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ComputeStatsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof computeStats>>
+>;
+export type ComputeStatsMutationBody = BodyType<StatsRequest>;
+export type ComputeStatsMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Compute statistics for a dataset
+ */
+export const useComputeStats = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof computeStats>>,
+    TError,
+    { data: BodyType<StatsRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof computeStats>>,
+  TError,
+  { data: BodyType<StatsRequest> },
+  TContext
+> => {
+  return useMutation(getComputeStatsMutationOptions(options));
+};

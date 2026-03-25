@@ -8,3 +8,85 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export type DatasetSummaryPreviewRowsItem = { [key: string]: unknown };
+
+export type ColumnInfoType =
+  (typeof ColumnInfoType)[keyof typeof ColumnInfoType];
+
+export const ColumnInfoType = {
+  numeric: "numeric",
+  categorical: "categorical",
+  datetime: "datetime",
+  unknown: "unknown",
+} as const;
+
+export interface ColumnInfo {
+  name: string;
+  type: ColumnInfoType;
+  nullCount: number;
+  uniqueCount: number;
+  sample: unknown[];
+}
+
+export interface DatasetSummary {
+  filename: string;
+  rowCount: number;
+  columnCount: number;
+  columns: ColumnInfo[];
+  previewRows: DatasetSummaryPreviewRowsItem[];
+}
+
+export type StatsRequestDataItem = { [key: string]: unknown };
+
+export interface StatsRequest {
+  data: StatsRequestDataItem[];
+  columns: ColumnInfo[];
+}
+
+export interface ValueCount {
+  value: string;
+  count: number;
+}
+
+export interface ColumnStats {
+  name: string;
+  type: string;
+  count: number;
+  nullCount: number;
+  uniqueCount: number;
+  /** @nullable */
+  mean: number | null;
+  /** @nullable */
+  median: number | null;
+  /** @nullable */
+  std: number | null;
+  /** @nullable */
+  min: number | null;
+  /** @nullable */
+  max: number | null;
+  /** @nullable */
+  q25: number | null;
+  /** @nullable */
+  q75: number | null;
+  topValues: ValueCount[];
+}
+
+export interface Correlation {
+  col1: string;
+  col2: string;
+  value: number;
+}
+
+export interface StatsResponse {
+  columnStats: ColumnStats[];
+  correlations: Correlation[];
+}
+
+export type UploadDatasetBody = {
+  file: Blob;
+};

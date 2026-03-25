@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: analysis
+    description: Data analysis operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,65 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /analysis/upload:
+    post:
+      operationId: uploadDataset
+      tags: [analysis]
+      summary: Upload a CSV dataset for analysis
+      description: Accepts a CSV file and returns parsed data summary and columns
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        "200":
+          description: Dataset uploaded and parsed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetSummary"
+        "400":
+          description: Invalid or missing file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /analysis/stats:
+    post:
+      operationId: computeStats
+      tags: [analysis]
+      summary: Compute statistics for a dataset
+      description: Accepts raw data rows and returns descriptive statistics per column
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StatsRequest"
+      responses:
+        "200":
+          description: Statistics computed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatsResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +95,159 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    DatasetSummary:
+      type: object
+      properties:
+        filename:
+          type: string
+        rowCount:
+          type: integer
+        columnCount:
+          type: integer
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/ColumnInfo"
+        previewRows:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+      required:
+        - filename
+        - rowCount
+        - columnCount
+        - columns
+        - previewRows
+
+    ColumnInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [numeric, categorical, datetime, unknown]
+        nullCount:
+          type: integer
+        uniqueCount:
+          type: integer
+        sample:
+          type: array
+          items: {}
+      required:
+        - name
+        - type
+        - nullCount
+        - uniqueCount
+        - sample
+
+    StatsRequest:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/ColumnInfo"
+      required:
+        - data
+        - columns
+
+    StatsResponse:
+      type: object
+      properties:
+        columnStats:
+          type: array
+          items:
+            $ref: "#/components/schemas/ColumnStats"
+        correlations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Correlation"
+      required:
+        - columnStats
+        - correlations
+
+    ColumnStats:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        count:
+          type: integer
+        nullCount:
+          type: integer
+        uniqueCount:
+          type: integer
+        mean:
+          type: ["number", "null"]
+        median:
+          type: ["number", "null"]
+        std:
+          type: ["number", "null"]
+        min:
+          type: ["number", "null"]
+        max:
+          type: ["number", "null"]
+        q25:
+          type: ["number", "null"]
+        q75:
+          type: ["number", "null"]
+        topValues:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValueCount"
+      required:
+        - name
+        - type
+        - count
+        - nullCount
+        - uniqueCount
+        - mean
+        - median
+        - std
+        - min
+        - max
+        - q25
+        - q75
+        - topValues
+
+    ValueCount:
+      type: object
+      properties:
+        value:
+          type: string
+        count:
+          type: integer
+      required:
+        - value
+        - count
+
+    Correlation:
+      type: object
+      properties:
+        col1:
+          type: string
+        col2:
+          type: string
+        value:
+          type: number
+      required:
+        - col1
+        - col2
+        - value
