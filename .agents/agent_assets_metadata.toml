@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "T0vCRc00UwhHvaakTemPG"
+uri = "file://UniqueMKN_dataset.csv"
+type = "table"
+title = "UniqueMKN E-Commerce Dataset (500 rows)"
